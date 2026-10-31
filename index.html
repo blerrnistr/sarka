@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>С днём рождения, Сарка</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- АУДИО (Загружается первым) -->
+  <audio id="bg-rain" loop src="sounds/rain2.mp3"></audio>
+  <audio id="bg-cave" loop src="sounds/ambience.mp3"></audio>
+  <audio id="bg-scene2" loop src="sounds/scene-2.mp3"></audio>
+  <audio id="bg-scene3" loop src="sounds/scene-3.mp3"></audio>
+  <audio id="sfx-fall" src="sounds/fall.mp3"></audio>
+  <audio id="sfx-heartbeat" src="sounds/heartbeat.mp3"></audio>
+  <audio id="sfx-steps" src="sounds/steps.mp3"></audio>
+<audio id="bg-end" loop src="sounds/end.mp3"></audio>
+<audio id="sfx-heal" src="sounds/heal.mp3"></audio>
+<audio id="sfx-meat" src="sounds/meat.mp3"></audio>
+<audio id="bg-steps" loop src="sounds/steps-2.mp3"></audio>
+<audio id="bg-steps-desmond" loop src="sounds/steps-desmond.mp3"></audio>
+<audio id="bg-tension" loop src="sounds/tension-melody.mp3"></audio>
+
+
+  <div id="app">
+    <div id="background"></div>
+    <div id="overlay"></div>
+    <div id="sprites">
+      <img id="bg-left" class="char-bg hidden" alt="">
+      <img id="bg-right" class="char-bg hidden" alt="">
+      <img id="sprite-left" class="sprite hidden" alt="">
+      <img id="sprite-right" class="sprite hidden" alt="">
+    </div>
+    <div id="story-panel" class="hidden">
+      <div id="dialogue"></div>
+    </div>
+    <div id="frame-overlay"></div>
+
+    <!-- Временная панель переключения сцен (удалить потом)
+    <div id="debug-panel">
+      <button data-jump="0">Сцена 1: ночь</button>
+      <button data-jump="43 ">Сцена 2: коридор</button>
+      <button data-jump="79">Сцена 3: зал</button>
+    </div> -->
+
+        <div id="start-screen">
+      <div id="start-bg"></div>
+      <div class="start-text-block">
+        <p class="start-lore">Жаклин, Кровавая Госпожа</p>
+        <p class="start-mission">Тот, Кто Ступает В Крови, видит: Многие Очи Богов возомнили себя равными ему. Это ошибка, которую вы двое исправите.</p>
+        <p class="start-tagline">Юсэн Шайлен, твоя задача — чтобы ни он, ни его приспешники не успели даже понять, что мертвы. <br>
+          Дезмонд Шэй, твоя — чтобы их бог не успел вмешаться. <br></p>
+      </div>
+      <button id="start-btn">  Не подведите Его. Идите.</button>
+    </div>
+
+    <div id="end-screen" class="hidden">
+      <div id="end-bg"></div>
+      <div id="end-vignette"></div>
+      <div id="end-content">
+        <div class="end-dialogue">
+          <p class="desmond">— Я не уйду, пока ты не дашь мне причину.</p>
+          <p class="yusen">— Я дам тебе сотню.</p>
+          <p class="desmond">— Тогда я останусь на сотню причин дольше.</p>
+        </div>
+      </div>
+    </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Playfair Display', serif;
+  background: #000;
+  color: #e8e0d5;
+  overflow: hidden;
+  height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Фон */
+#background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1.2s ease-in-out;
+  filter: brightness(0.65) blur(2px);
+  z-index: 1;
+  transform-origin: center;
+  animation: bg-breathe 25s ease-in-out infinite;
+}
+
+/* Убираем размытие для ВСЕХ иллюстраций, которые содержат слово "scene" */
+#background[style*="scene-"] {
+  filter: brightness(0.85); /* Убирает blur(2px) */
+  animation: none; /* Останавливает "дыхание" фона */
+}
+
+/* Медленное «дыхание» фона — мир будто плывёт */
+@keyframes bg-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.015); }
+}
+
+/* Виньетка */
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.9) 100%);
+  z-index: 1;
+  pointer-events: none;
+  transition: background-color 1s ease;
+}
+
+/* Контейнер для персонажей */
+#sprites {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Общие настройки для левой стороны */
+#sprite-left, #bg-left {
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+}
+
+/* Общие настройки для правой стороны */
+#sprite-right, #bg-right {
+  position: absolute;
+  bottom: 0;
+  right: 5%;
+}
+
+/* Подложки (шипы) */
+.char-bg {
+  height: 95vh;
+  width: auto;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  mask-image: linear-gradient(to top, transparent 0%, black 20%);
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 20%);
+}
+
+/* Сами персонажи (Базовое состояние) */
+.sprite {
+  height: 90vh;
+  z-index: 2;
+  /* Оставляем только контраст и черную тень для объема */
+  filter: contrast(1.1) saturate(1.1) drop-shadow(0 0 20px rgba(0,0,0,0.8));
+  transition: opacity 0.4s ease, filter 0.4s ease, transform 0.5s ease;
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, transparent 0%, black 15%);
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 15%);
+}
+
+.char-bg.active-bg {
+  opacity: 0.8;
+}
+
+.hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* Подсветка говорящего (Активное состояние) */
+.sprite.active {
+  /* Убрали красное свечение, оставили только легкую прибавку яркости */
+  filter: contrast(1.1) saturate(1.1) brightness(1.1) drop-shadow(0 0 20px rgba(0,0,0,0.8));
+  transform: translateY(-4px); 
+}
+
+/* Затемнение молчащего (Dimmed) */
+.sprite.dimmed {
+  /* Убрали все, кроме приглушения яркости */
+  filter: contrast(1.1) saturate(1.1) brightness(0.5) drop-shadow(0 0 20px rgba(0,0,0,0.8));
+  transform: translateY(4px); 
+}
+
+
+/* Центральная панель с текстом */
+#story-panel {
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40vw;
+  max-width: 550px;
+  background: linear-gradient(to right, 
+    transparent 0%, 
+    rgba(10, 5, 5, 0.95) 5%,
+    rgba(10, 5, 5, 0.95) 95%,
+    transparent 100%
+  );
+  padding: 30px 80px;
+  z-index: 10;
+  text-align: left;
+  overflow-y: auto;
+}
+
+#story-panel::-webkit-scrollbar {
+  width: 0px;
+}
+
+#dialogue {
+  font-size: 1.2rem;
+  line-height: 2rem;
+  color: #f0e8dc;
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+/* Мигающий значок в конце текста */
+.cursor {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background-image: url('images/next-icon.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  margin-left: 5px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Рамка */
+#frame-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url('images/frame.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Экраны старта и финала */
+#start-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: radial-gradient(ellipse at center, #1a0505 0%, #000 100%);
+  text-align: center;
+  padding: 20px;
+  
+  /* ДОБАВЬ ЭТИ ДВЕ СТРОКИ: */
+  opacity: 1;
+  transition: opacity 1.5s ease; /* Плавное исчезновение */
+}
+
+#end-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  background: #000;
+}
+
+#start-screen h1, #end-screen h1 {
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #d44;
+  text-shadow: 0 0 40px rgba(200, 40, 40, 0.7);
+  font-family: 'Marck Script', cursive;
+}
+
+.subtitle {
+  font-size: 1.3rem;
+  font-style: italic;
+  color: #a08080;
+  margin: 20px 0 50px;
+  letter-spacing: 0.08em;
+}
+
+button#start-btn, button#restart-btn {
+  padding: 12px 40px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 1px solid #d44;
+  color: #e8a0a0;
+  cursor: pointer;
+  transition: all 0.4s;
+  border-radius: 2px;
+}
+
+button#start-btn:hover, button#restart-btn:hover {
+  background: rgba(200, 40, 40, 0.2);
+  color: #fff;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  #story-panel { width: 85vw; padding: 20px; }
+  #dialogue { font-size: 1rem; }
+  .sprite { height: 60vh; }
+}
+
+#debug-panel {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 60vw;
+  padding: 6px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #d44;
+}
+
+#debug-panel button {
+  font-family: monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  background: #200;
+  color: #e8a0a0;
+  border: 1px solid #d44;
+  cursor: pointer;
+}
+
+#debug-panel button:hover {
+  background: #d44;
+  color: #fff;
+}
+
+/* Описания — курсив, чуть приглушённый */
+#dialogue > div {
+  font-style: italic;
+  color: #d8cfc4;
+}
+
+/* Реплики — прямой шрифт, чуть светлее, с отступом слева */
+#dialogue > div.dialogue-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;       /* чуть крупнее Playfair, т.к. Cormorant мельче по кеглю */
+  font-style: normal;
+  color: #f5ede2;
+  padding-left: 0.5em;
+}
+
+/* ==========================================
+   РЕЖИМ ИЛЛЮСТРАЦИИ (CG)
+   ========================================== */
+
+/* Фиксированное окно диалога */
+#story-panel.cg-layout {
+  top: auto; 
+  bottom: 40px; 
+  width: 85vw; 
+  max-width: 1000px;
+  height: 220px; 
+  padding: 30px 60px;
+  
+  transition: top 0.5s ease, bottom 0.5s ease, width 0.5s ease, height 0.5s ease, background 0.5s ease;
+  
+  background: linear-gradient(to bottom, 
+    transparent 0%, 
+    rgba(10, 5, 5, 0.9) 15%, 
+    rgba(10, 5, 5, 0.95) 85%,
+    transparent 100%
+  );
+}
+/* Убираем flex-центрирование, возвращаем обычный поток */
+#story-panel.cg-layout #dialogue {
+  font-size: 1.2rem;
+  line-height: 2rem;
+  color: #f0e8dc;
+  font-style: italic;
+  white-space: pre-wrap;
+  
+  /* НОВОЕ: Отступы внутри окна, чтобы текст не прилипал к краям */
+  padding: 20px 40px 20px 40px; /* Сверху 10, по бокам 40, снизу 40 */
+  box-sizing: border-box; /* Чтобы padding не увеличивал высоту окна */
+}
+
+/* Отступы для реплик */
+#story-panel.cg-layout #dialogue > div {
+  margin-bottom: 20px; /* Чуть уменьшил, чтобы текст не так сильно разлетался */
+  padding: 0; /* Убрал лишний padding, так как он теперь есть у родителя */
+}
+
+/* ==========================================
+   ДИНАМИКА: ПЛАВНОЕ ПОЯВЛЕНИЕ ТЕКСТА
+   ========================================== */
+
+/* Класс, который мы будем вешать на новые абзацы */
+.text-fade-in {
+  animation: textFadeIn 0.6s ease-out forwards;
+}
+
+@keyframes textFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* ==========================================
+   ДИНАМИКА: КИНЕМАТОГРАФИЧНЫЙ ПЕРЕХОД
+   ========================================== */
+
+/* Класс для размытия фона при переходе */
+.bg-blur-transition {
+  filter: brightness(0.3) blur(10px) !important;
+  transform: scale(1.05); /* Легкое приближение */
+  transition: filter 1s ease, transform 1s ease !important;
+}
+
+/* Плавное растворение иллюстрации при возврате к спрайтам */
+.bg-cg-fadeout {
+  opacity: 0;
+  transition: opacity 1s ease-in-out !important;
+}
+
+/* ==========================================
+   ДИНАМИКА: ТРЯСКА ЭКРАНА (SCREEN SHAKE)
+   ========================================== */
+
+.screen-shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-2px, 1px, 0); }
+  20%, 80% { transform: translate3d(4px, -1px, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 1px, 0); }
+  40%, 60% { transform: translate3d(6px, -1px, 0); }
+}
+/* ==========================================
+   ДИНАМИКА: РАСШИРЕННЫЕ ПЕРЕХОДЫ
+   ========================================== */
+
+/* 1. Вспышка (Flash) — для ударов, криков, шока */
+.cinematic-flash {
+  animation: flashEffect 0.4s ease-out forwards;
+}
+
+@keyframes flashEffect {
+  0% { background-color: rgba(255, 255, 255, 0); }
+  10% { background-color: rgba(255, 255, 255, 0.8); }
+  100% { background-color: rgba(255, 255, 255, 0); }
+}
+
+/* 2. Наплыв (Zoom) — для смены локаций */
+.cinematic-zoom {
+  animation: zoomEffect 1.2s ease-in-out forwards;
+}
+
+@keyframes zoomEffect {
+  0% { transform: scale(1); filter: brightness(0.65); }
+  50% { transform: scale(1.05); filter: brightness(0.2) blur(4px); } /* Уходим в темноту и приближаем */
+  100% { transform: scale(1); filter: brightness(0.65); }
+}
+
+/* 3. Резкий сдвиг (Slam) — для резких движений */
+.cinematic-slam {
+  animation: slamEffect 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes slamEffect {
+  0% { transform: scale(1) translateY(0); }
+  20% { transform: scale(1.02) translateY(-10px); filter: brightness(0.8); }
+  100% { transform: scale(1) translateY(0); filter: brightness(0.65); }
+}
+
+/* Индивидуальная коррекция позиций, чтобы персонажи ровно стояли на своих подложках */
+#sprite-left {
+  /* Если Юсэна тоже нужно подвинуть, раскомментируйте и подберите значение: */
+  left: 6%
+}
+
+#sprite-right {
+  /* Сдвигаем Дезмонда вправо, чтобы убрать зазор слева от него */
+  right: 6%;
+}
+
+/* Плавное проявление фона (стартуем с чёрного) */
+#background.bg-fade-in {
+  animation: bgFadeIn 1.4s ease-out forwards;
+}
+
+@keyframes bgFadeIn {
+  from { opacity: 0; filter: brightness(0) blur(4px); }
+  to   { opacity: 1; filter: brightness(0.65) blur(2px); }
+}
+
+/* Для CG-фона — без blur */
+#background.bg-fade-in {
+  animation: bgFadeIn 1.4s ease-out forwards;
+}
+@keyframes bgFadeIn {
+  from { opacity: 0; filter: brightness(0) blur(4px); }
+  to   { opacity: 1; filter: brightness(0.65) blur(2px); }
+}
+#background.bg-fade-in[style*="scene-"] {
+  animation: bgFadeInCG 1.4s ease-out forwards;
+}
+@keyframes bgFadeInCG {
+  from { opacity: 0; filter: brightness(0); }
+  to   { opacity: 1; filter: brightness(0.85); }
+}
+#story-panel.text-fade-in-panel {
+  animation: panelFadeIn 1s ease-out forwards;
+}
+@keyframes panelFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ==========================================
+   ФИНАЛЬНЫЙ ЭКРАН
+   ========================================== */
+
+#end-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('images/end-art.png'); /* ← путь к твоему арту */
+  background-size: cover;
+  background-position: center 30%;
+  filter: brightness(0.6) saturate(1.05);
+  transform: scale(1.05);
+  animation: endBgBreath 12s ease-in-out infinite;
+}
+
+@keyframes endBgBreath {
+  0%, 100% { transform: scale(1.05); }
+  50%      { transform: scale(1.08); }
+}
+
+#end-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Легкая тень в правом верхнем углу, чтобы приглушить небо */
+    radial-gradient(circle at 80% 20%, rgba(0,0,0,0.6) 0%, transparent 50%),
+    
+    /* Твои старые градиенты ниже */
+    linear-gradient(to bottom,
+      rgba(0,0,0,0.55) 0%,
+      transparent 25%,
+      transparent 55%,
+      rgba(0,0,0,0.3) 75%,
+      rgba(0,0,0,0.95) 100%
+    ),
+    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+}
+
+#end-content {
+  position: absolute;
+  right: 8%;         
+  bottom: 65%;       /* ← ВОТ ЭТА СТРОКА ОТВЕЧАЕТ ЗА ВЫСОТУ */
+  text-align: right;  
+  width: 90%;
+  max-width: 600px;  
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* прижимаем кнопку и текст вправо */
+  animation: endContentFade 2s ease-out 0.6s both;
+}
+
+@keyframes endContentFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Стили самого диалога */
+.end-dialogue {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.end-dialogue p {
+  font-family: 'Cormorant Garamond', serif !important; 
+  font-size: 1.8rem !important; /* Увеличил размер до 1.8rem */
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: 
+    0px 2px 4px rgba(0, 0, 0, 1), 
+    0px 0px 15px rgba(0, 0, 0, 0.9),
+    0px 0px 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Юсэн (теплый, курсив) */
+.end-dialogue p.yusen {
+  color: #e8a0a0 !important; 
+  font-style: italic !important;
+  text-shadow: 
+    0px 2px 4px rgba(0, 0, 0, 1), 
+    0px 0px 15px rgba(0, 0, 0, 0.9),
+    0px 0px 20px rgba(232, 160, 160, 0.3) !important;
+}
+
+/* Дезмонд (холодный, прямой) */
+.end-dialogue p.desmond {
+  color: #b0c4de !important; 
+  font-style: normal !important;
+  text-shadow: 
+    0px 2px 4px rgba(0, 0, 0, 1), 
+    0px 0px 15px rgba(0, 0, 0, 0.9),
+    0px 0px 20px rgba(176, 196, 222, 0.4) !important;
+}
+
+#end-content button#restart-btn {
+  padding: 12px 40px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  background: rgba(10, 5, 5, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid #d44;
+  color: #e8a0a0;
+  cursor: pointer;
+  transition: all 0.4s;
+  border-radius: 2px;
+}
+
+#end-content button#restart-btn:hover {
+  background: rgba(200, 40, 40, 0.3);
+  color: #fff;
+  box-shadow: 0 0 30px rgba(200, 40, 40, 0.4);
+}
+
+/* Мягкое появление чёрного перед финальным экраном */
+#end-screen.hidden {
+  display: none;
+}
+
+/* ==========================================
+   СТАРТОВЫЙ ЭКРАН
+   ========================================== */
+
+#start-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: transparent; /* Убираем старый градиент */
+  text-align: center;
+  padding: 20px;
+  opacity: 1;
+  transition: opacity 1.5s ease;
+}
+
+/* Твой фон с картинкой */
+#start-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('images/start-art.png'); /* Твой арт с замком */
+  background-size: cover;
+  background-position: center 30%;
+  z-index: -1; /* Отправляем назад */
+  
+  /* ВАЖНО: Убираем темный фильтр. Вместо этого затемняем через градиент ниже */
+  filter: brightness(0.8) saturate(1.1); 
+  animation: startBgBreath 20s ease-in-out infinite;
+}
+
+/* Кинематографичная виньетка ПОВЕРХ картинки, но ПОД текстом */
+#start-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Центр затемнен для текста, края прозрачные для замка */
+  background: radial-gradient(ellipse at center, rgba(5, 3, 3, 0.9) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0) 90%);
+  z-index: 0; /* Поверх фона, но под текстом */
+  pointer-events: none;
+}
+
+/* Убеждаемся, что текст и кнопка выше виньетки */
+.start-text-block, #start-btn {
+  position: relative;
+  z-index: 1;
+}
+
+/* Убираем жесткую плашку, текст парит в виньетке */
+.start-text-block {
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  margin-bottom: 40px;
+  text-align: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  animation: startTextFade 2.5s ease-out 0.5s both;
+}
+
+/* Имя Жаклин — шепот, разрядка, приглушенный цвет */
+.start-lore {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.35em; /* Сильная разрядка для стиля */
+  text-transform: uppercase;
+  color: #806060; /* Тусклый, кровавый */
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* Основной текст — четкий, читаемый, с легкой тенью */
+.start-mission {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  line-height: 1.7;
+  color: #e0d8d0;
+  font-style: italic;
+  margin: 0;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.9);
+}
+
+/* Кульминация — светлее, прямее, с акцентом */
+.start-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: #f5ede2;
+  font-weight: 600;
+  font-style: normal;
+  margin-top: 15px;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.9), 0 0 25px rgba(200, 40, 40, 0.15);
+}
+
+/* Кнопка — теперь выглядит как кинематографичная кнопка */
+button#start-btn {
+  padding: 15px 50px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: rgba(10, 5, 5, 0.6);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(200, 40, 40, 0.4);
+  color: #e8a0a0;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  border-radius: 1px;
+  animation: startBtnAppear 2s ease-out 1s both;
+}
+
+button#start-btn:hover {
+  background: rgba(200, 40, 40, 0.15);
+  color: #fff;
+  border-color: #d44;
+  box-shadow: 0 0 30px rgba(200, 40, 40, 0.3);
+  letter-spacing: 0.2em;
+}
+
+@keyframes startBtnAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Медленное движение для иллюстраций */
+#background.cg-drift {
+  animation: cgDriftEffect 15s ease-in-out infinite alternate !important;
+}
+
+@keyframes cgDriftEffect {
+  0% { 
+    transform: scale(1) translate(0, 0); 
+  }
+  100% { 
+    transform: scale(1.05) translate(-1%, -1%); 
+  }
+}
+
